@@ -18,15 +18,11 @@ Use a Debian distribution container to run the program locally.
 
 And use a volume to transfer the PDF files between the machine and the container.
 
-## Build or import
+## Build
 
-You can build the image from scratch runing this from this directory;
+Build the image from scratch runing this from this directory;
 
 > [docker/podman] build -t marker:2.17 .
-
-Or you can import
-
-> [docker/podman] import marker-v2.17-container.tar.gz
 
 ## Usage
 
