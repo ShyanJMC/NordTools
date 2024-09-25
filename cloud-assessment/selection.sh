@@ -39,7 +39,17 @@ configure_gcp(){
 
 audit_aws(){
 	echo "Auditing AWS and saving it into /data/[date]"
-	
+	prowler aws --output-formats html --output-directory /data/aws/$(date '+%Y-%m-%d_%H-%M')-prowler
+	scout aws --no-browser --max-workers 20  --report-dir /data/aws/$(date '+%Y-%m-%d_%H-%M')-scout --result-format json 
+
+	echo "Getting information from AWS Security Hub"
+	echo "Take under consideration that AWS Security Hub needs AWS Config enabled with 'Conformance Packs' enabled"
+	echo "The service can take some hours to provide information from first enable"
+	mkdir -p /data/aws/$(date '+%Y-%m-%d_%H-%M')-metahub && cd /data/aws/$(date '+%Y-%m-%d_%H-%M')-metahub
+	/opt/metahub-2.5.0/metahub --sh-profile default --output-modes html
+
+	cd /opt/electriceye -t AWS -o html
+	mkdir /data/aws/electriceye-$(date '+%Y-%m-%d_%H-%M') && mv eeauditor/processor/outputs/output_executive_report.html /data/aws/electriceye-$(date '+%Y-%m-%d_%H-%M')
 }
 
 audit_azure(){
@@ -49,6 +59,8 @@ audit_azure(){
 	# Working on cloud sploit
 	# cp config_example.js config.js && <
     # /opt/cloudsploit-3.5.0/
+
+    #cd /opt/electriceye -t
 }
 
 audit_gcp(){
@@ -69,13 +81,11 @@ main(){
         elif [[ $selection == "2" ]]; then
                 configure_gcp
         elif [[ $selection == "3" ]]; then
-                
-                
+            	audit_aws
         elif [[ $selection == "4" ]]; then
-        	audit_azure
-                
+        		audit_azure
         elif [[ $selection == "5" ]]; then
-                
+        		echo
         elif [[ $selection == "6" ]]; then
             exec /usr/bin/bash
         fi
