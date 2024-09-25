@@ -38,23 +38,34 @@ configure_gcp(){
 }
 
 audit_aws(){
-	echo "Auditing AWS and saving it into /data/[date]"
+	echo "Auditing AWS and saving it into /data/aws/[date]"
+	
+	cd /opt/prowler-4.3.5 && python3 -m pip install --break-system-packages -r requirements.txt
 	prowler aws --output-formats html --output-directory /data/aws/$(date '+%Y-%m-%d_%H-%M')-prowler
+
+	cd /opt/ScoutSuite-5.14.0 && python3 -m pip install --break-system-packages -r requirements.txt
 	scout aws --no-browser --max-workers 20  --report-dir /data/aws/$(date '+%Y-%m-%d_%H-%M')-scout --result-format json 
 
 	echo "Getting information from AWS Security Hub"
 	echo "Take under consideration that AWS Security Hub needs AWS Config enabled with 'Conformance Packs' enabled"
 	echo "The service can take some hours to provide information from first enable"
+	cd /opt/metahub-2.5.0 && python3 -m pip install --break-system-packages -r requirements.txt
 	mkdir -p /data/aws/$(date '+%Y-%m-%d_%H-%M')-metahub && cd /data/aws/$(date '+%Y-%m-%d_%H-%M')-metahub
 	/opt/metahub-2.5.0/metahub --sh-profile default --output-modes html
 
-	cd /opt/electriceye -t AWS -o html
+	echo "Electriceye MUST have an AWS region"
+	aws configure 
+	cd /opt/electriceye && python eeauditor/controller.py -t AWS -o html
 	mkdir /data/aws/electriceye-$(date '+%Y-%m-%d_%H-%M') && mv eeauditor/processor/outputs/output_executive_report.html /data/aws/electriceye-$(date '+%Y-%m-%d_%H-%M')
 }
 
 audit_azure(){
-	echo "Auditing Azure and saving it into /data/[date]"
+	echo "Auditing Azure and saving it into /data/azure/[date]"
+	
+	cd /opt/prowler-4.3.5 && python3 -m pip install --break-system-packages -r requirements.txt
 	prowler azure --az-cli-auth --output-formats html --output-directory /data/azure/$(date '+%Y-%m-%d_%H-%M')-prowler
+
+	cd /opt/ScoutSuite-5.14.0 && python3 -m pip install --break-system-packages -r requirements.txt
     scout azure --cli --no-browser --max-workers 20 --all-subscriptions --report-dir /data/azure/$(date '+%Y-%m-%d_%H-%M')-scout --result-format json --skip securitycenter
 	# Working on cloud sploit
 	# cp config_example.js config.js && <
@@ -64,7 +75,7 @@ audit_azure(){
 }
 
 audit_gcp(){
-	echo "Auditing GCP and saving it into /data/[date]"
+	echo "Auditing GCP and saving it into /data/gcp/[date]"
 }
 
 main(){
@@ -89,7 +100,6 @@ main(){
         elif [[ $selection == "6" ]]; then
             exec /usr/bin/bash
         fi
-
 }
 
 main
